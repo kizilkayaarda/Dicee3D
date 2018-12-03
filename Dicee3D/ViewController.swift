@@ -21,18 +21,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
-        // creating the dice object
-        /*let diceSCN = SCNScene(named: "art.scnassets/diceCollada.scn")
-        
-        if let diceNode = diceSCN?.rootNode.childNode(withName: "Dice", recursively: true) {
-            
-            diceNode.position = SCNVector3(0, 0, -0.3)
-            
-            sceneView.scene.rootNode.addChildNode(diceNode)
-        }
-        
-        
-        sceneView.autoenablesDefaultLighting = true*/
+       
+        sceneView.autoenablesDefaultLighting = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -54,6 +44,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let touchLocation = touch.location(in: sceneView)
+            
+            let testResults = sceneView.hitTest(touchLocation, types: .existingPlaneUsingExtent)
+            
+            if let hitResult = testResults.first {
+                
+                let diceSCN = SCNScene(named: "art.scnassets/diceCollada.scn")
+ 
+                if let diceNode = diceSCN?.rootNode.childNode(withName: "Dice", recursively: true) {
+ 
+                    diceNode.position = SCNVector3(
+                        x: hitResult.worldTransform.columns.3.x,
+                        y: hitResult.worldTransform.columns.3.y + diceNode.boundingSphere.radius,
+                        z: hitResult.worldTransform.columns.3.z
+                    )
+ 
+                    sceneView.scene.rootNode.addChildNode(diceNode)
+             }
+                
+            }
+        }
+    }
+    
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         if anchor is ARPlaneAnchor {
             
@@ -68,7 +83,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             planeNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
             
             let material = SCNMaterial()
-            material.diffuse.contents = UIImage(named: "art.scnassests/grid.png")
+            material.diffuse.contents = UIImage(named: "art.scnassets/grid.png")
             
             plane.materials = [material]
             planeNode.geometry = plane
